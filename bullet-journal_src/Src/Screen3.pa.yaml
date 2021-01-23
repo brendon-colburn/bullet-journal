@@ -1,0 +1,453 @@
+"Screen3 As screen.'phoneLayout_Calendar_ver3.0'":
+
+    RectQuickActionBar2 As rectangle:
+        Width: =Parent.Width
+        Height: =88
+        ZIndex: =1
+
+    LblAppName2 As label:
+        Text: ="Calendar"
+        X: =32
+        Width: =Parent.Width - Self.X
+        Height: =88
+        ZIndex: =2
+        Wrap: =false
+        Size: =27
+
+    dropdownCalendarSelection1 As dropdown:
+        Items: =Office365Outlook.CalendarGetTables().value
+        Tooltip: ="Select a calendar"
+        Default: =_myCalendar.DisplayName
+        X: =37
+        Y: =RectQuickActionBar2.Height + 20
+        Width: =470
+        Height: =60
+        ZIndex: =4
+        Size: =21
+        OnSelect: |-
+            =/*retrieves calendar events for all days in current month view and selected calendar 
+            _minDate and _maxDate act as markers to prevent duplicate data collection*/         
+            If(
+                IsBlank(_userDomain),
+                UpdateContext({_showLoading: true});
+                Set(
+                    _userDomain,
+                    Right(
+                        User().Email,
+                        Len(User().Email) - Find(
+                            "@",
+                            User().Email
+                        )
+                    )
+                );
+                Set(
+                    _dateSelected,
+                    Today()
+                );
+                Set(
+                    _firstDayOfMonth,
+                    DateAdd(
+                        Today(),
+                        1 - Day(Today()),
+                        Days
+                    )
+                );
+                Set(
+                    _firstDayInView,
+                    DateAdd(
+                        _firstDayOfMonth,
+                        -(Weekday(_firstDayOfMonth) - 2 + 1),
+                        Days
+                    )
+                );
+                Set(
+                    _lastDayOfMonth,
+                    DateAdd(
+                        DateAdd(
+                            _firstDayOfMonth,
+                            1,
+                            Months
+                        ),
+                        -1,
+                        Days
+                    )
+                )
+            );
+            Set(
+                _calendarVisible,
+                false
+            );
+            UpdateContext({_showLoading: true});
+            Set(
+                _myCalendar,
+                Self.Selected
+            );
+            Set(
+                _minDate,
+                DateAdd(
+                    _firstDayOfMonth,
+                    -(Weekday(_firstDayOfMonth) - 2 + 1),
+                    Days
+                )
+            );
+            Set(
+                _maxDate,
+                DateAdd(
+                    DateAdd(
+                        _firstDayOfMonth,
+                        -(Weekday(_firstDayOfMonth) - 2 + 1),
+                        Days
+                    ),
+                    40,
+                    Days
+                )
+            );
+            ClearCollect(
+                MyCalendarEvents,
+                Office365Outlook.GetEventsCalendarViewV2(
+                    _myCalendar.Name,
+                    Text(
+                        _minDate,
+                        UTC
+                    ),
+                    Text(
+                        _maxDate,
+                        UTC
+                    )
+                ).value
+            );
+            UpdateContext({_showLoading: false});
+            Set(
+                _calendarVisible,
+                true
+            )
+        OnChange: =Select(dropdownCalendarSelection1)
+
+    LblResetToday1 As label:
+        Text: =DateDiff(Date(Year(Today()), Month(Today()), 1), Today(), Days) + 1
+        Color: =iconCalendar1.Color
+        FontWeight: =FontWeight.Bold
+        Align: =Align.Center
+        X: =iconCalendar1.X
+        Y: =iconCalendar1.Y
+        Width: =iconCalendar1.Width
+        Height: =iconCalendar1.Height
+        ZIndex: =3
+        Size: =15
+        PaddingTop: =12
+
+    iconCalendar1 As icon.CalendarBlank:
+        Tooltip: ="Reset selected date to today"
+        Icon: =Icon.CalendarBlank
+        X: =Parent.Width - Self.Width - 37
+        Y: =dropdownCalendarSelection1.Y
+        Width: =60
+        Height: =60
+        ZIndex: =5
+        TabIndex: =0
+        OnSelect: |-
+            =/*resets calendar view and date selection to today*/
+                     
+            Set(_dateSelected, Today());         
+            Set(_firstDayOfMonth, DateAdd(Today(), 1 - Day(Today()), Days));         
+            Set(_firstDayInView, DateAdd(_firstDayOfMonth, -(Weekday(_firstDayOfMonth) - 2 + 1), Days));         
+            Set(_lastDayOfMonth, DateAdd(DateAdd(_firstDayOfMonth, 1, Months), -1, Days))
+
+    LblMonthSelected1 As label:
+        Text: =Text(_firstDayOfMonth, "mmmm yyyy")
+        Align: =Align.Center
+        Y: =dropdownCalendarSelection1.Y + dropdownCalendarSelection1.Height + 20
+        Width: =Parent.Width
+        Height: =64
+        ZIndex: =6
+        Size: =21
+        Wrap: =false
+        Visible: =_calendarVisible
+
+    iconPrevMonth1 As icon.ChevronLeft:
+        Tooltip: ="View previous month"
+        Icon: =Icon.ChevronLeft
+        Y: =LblMonthSelected1.Y
+        Width: =91
+        ZIndex: =7
+        PaddingLeft: =10
+        PaddingRight: =10
+        PaddingTop: =10
+        PaddingBottom: =10
+        Visible: =_calendarVisible
+        TabIndex: =0
+        OnSelect: |-
+            =/*changes month view to previous month*/
+                       
+            Set(_firstDayOfMonth, DateAdd(_firstDayOfMonth, -1, Months));           
+            Set(_firstDayInView, DateAdd(_firstDayOfMonth, -(Weekday(_firstDayOfMonth) - 2 + 1), Days));           
+            Set(_lastDayOfMonth, DateAdd(DateAdd(_firstDayOfMonth, 1, Months), -1, Days));           
+            /*collects calendar events for all days in current month view. Updates _minDate to prevent duplicate data collection if user returns to this month view*/           
+            If(_minDate > _firstDayOfMonth,           
+             Collect(MyCalendarEvents, Office365Outlook.GetEventsCalendarViewV2(_myCalendar.Name, Text(_firstDayInView, UTC), Text(DateAdd(_minDate, -1, Days), UTC)).value);           
+             Set(_minDate, _firstDayInView))
+
+    iconNextMonth1 As icon.ChevronRight:
+        Tooltip: ="View next month"
+        Icon: =Icon.ChevronRight
+        X: =Parent.Width - Self.Width
+        Y: =LblMonthSelected1.Y
+        Width: =91
+        ZIndex: =8
+        PaddingLeft: =10
+        PaddingRight: =10
+        PaddingTop: =10
+        PaddingBottom: =10
+        Visible: =_calendarVisible
+        TabIndex: =0
+        OnSelect: |-
+            =/*changes month view to next month*/
+                       
+            Set(_firstDayOfMonth, DateAdd(_firstDayOfMonth, 1, Months));           
+            Set(_firstDayInView, DateAdd(_firstDayOfMonth, -(Weekday(_firstDayOfMonth) - 2 + 1), Days));           
+            /*collects calendar events for all days in current month view. Updates _maxDate to prevent duplicate data collection if user returns to this month view*/           
+            Set(_lastDayOfMonth, DateAdd(DateAdd(_firstDayOfMonth, 1, Months), -1, Days));           
+            If(_maxDate < _lastDayOfMonth,           
+             Collect(MyCalendarEvents, Office365Outlook.GetEventsCalendarViewV2(_myCalendar.Name, Text(DateAdd(_maxDate, 1, Days), UTC), DateAdd(_firstDayInView, 40, Days)).value);           
+             Set(_maxDate, DateAdd(_firstDayInView, 40, Days)))
+
+    WeekdayGallery1 As gallery.WeekdayGallery:
+        Items: =Calendar.WeekdaysShort()
+        AccessibleLabel: ="Days of the week"
+        TemplateSize: =91
+        TemplatePadding: =0
+        ShowScrollbar: =false
+        Y: =LblMonthSelected1.Y + LblMonthSelected1.Height + 20
+        Width: =Parent.Width
+        Height: =45
+        ZIndex: =9
+        Visible: =_calendarVisible
+
+        Title2 As label:
+            Text: =ThisItem.Value
+            Align: =Align.Center
+            VerticalAlign: =Middle
+            X: =WeekdayGallery1.TemplateWidth / 2 - Self.Width / 2
+            Y: =WeekdayGallery1.TemplateHeight / 2 - Self.Height / 2
+            Width: =WeekdayGallery1.TemplateWidth
+            Height: =WeekdayGallery1.TemplateHeight
+            ZIndex: =1
+            Wrap: =false
+            Size: =17 * WeekdayGallery1.TemplateWidth / 77
+            OnSelect: =Select(Parent)
+
+    MonthDayGallery1 As gallery.MonthDayGallery:
+        Items: =[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, 20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41]
+        WrapCount: =7
+        AccessibleLabel: ="Days of selected month"
+        TemplateSize: =65
+        TemplatePadding: =0
+        Layout: =Layout.Vertical
+        ShowScrollbar: =false
+        Y: =WeekdayGallery1.Y + WeekdayGallery1.Height
+        Width: =Parent.Width
+        Height: =390
+        ZIndex: =10
+        Visible: =_calendarVisible
+
+        Title3 As label:
+            Text: =Day(DateAdd(_firstDayInView,ThisItem.Value,Days))
+            Color: =If(DateAdd(_firstDayInView, ThisItem.Value) = _dateSelected, RGBA(255, 255, 255, 1), DateAdd(_firstDayInView, ThisItem.Value) = Today(), RGBA(47, 41, 43, 1), LblMonthSelected1.Color)
+            BorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderColor: =Self.Color
+            Fill: |-
+                =/*Fill value changes if the gallery item day = today, or if it lies outside of the current month*/             
+                If(
+                    /*Date selected is today*/
+                    DateAdd(_firstDayInView, ThisItem.Value) = Today() && DateAdd(_firstDayInView, ThisItem.Value) = _dateSelected, RGBA(0,0,0,0),
+                    /*Today when it is not selected*/
+                    DateAdd(_firstDayInView, ThisItem.Value) = Today(), ColorFade(Subcircle1.Fill, 0.67), 
+                    /*The day is outside the range of the currently selected month*/
+                    Abs(Self.Text - ThisItem.Value) > 10,RGBA(200, 200, 200, 0.3), RGBA(0, 0, 0, 0))
+            Align: =Align.Center
+            VerticalAlign: =Middle
+            Width: =MonthDayGallery1.TemplateWidth
+            Height: =MonthDayGallery1.TemplateHeight
+            ZIndex: =3
+            Size: =17 * MonthDayGallery1.TemplateWidth / 91
+            Visible: |-
+                =/*This item is in a row containing no days of the visible month. It is in the row after the row where the last day of the month occurs*/ 
+                 !(DateAdd(_firstDayInView,ThisItem.Value,Days) - Weekday(DateAdd(_firstDayInView,ThisItem.Value,Days)) + 1 > _lastDayOfMonth)
+            Wrap: =false
+            TabIndex: =0
+            FocusedBorderThickness: =2
+            OnSelect: =Set(_dateSelected, DateAdd(_firstDayInView, ThisItem.Value, Days))
+
+        Subcircle1 As circle:
+            X: =MonthDayGallery1.TemplateWidth/2 - Self.Width/2
+            Y: =MonthDayGallery1.TemplateHeight / 2 - Self.Height / 2
+            Width: =Self.Height
+            Height: =3 * Title3.Size
+            ZIndex: =2
+            Visible: =And(DateAdd(_firstDayInView, ThisItem.Value) = _dateSelected, Title3.Visible)
+            OnSelect: =Select(Parent)
+
+        Circle1 As circle:
+            X: =MonthDayGallery1.TemplateWidth / 2 - Self.Width / 2
+            Y: =MonthDayGallery1.TemplateHeight * (0.75)
+            Width: =6.5
+            Height: =Self.Width
+            ZIndex: =1
+            Visible: |-
+                =/*Visible if calendar events are found on this day*/               
+                CountRows(Filter(MyCalendarEvents, DateValue(Text(Start)) = DateAdd(_firstDayInView,ThisItem.Value,Days))) > 0 && !Subcircle1.Visible && Title3.Visible
+            OnSelect: =Select(Parent)
+
+    iconEmptyState1 As icon.CalendarBlank:
+        Icon: =Icon.CalendarBlank
+        DisplayMode: =DisplayMode.View
+        X: =Parent.Width/2 - Self.Width/2
+        Y: =LblEmptyState1.Y - Self.Height
+        ZIndex: =14
+        Visible: =IsBlank(_userDomain)
+
+    LblEmptyState1 As label:
+        Text: ="Select a calendar from the drop down to begin"
+        Align: =Align.Center
+        X: =Parent.Width / 2 - Self.Width / 2
+        Y: =Parent.Height / 2 - Self.Height / 2
+        Width: =450
+        Height: =150
+        DisplayMode: =DisplayMode.View
+        ZIndex: =15
+        Visible: =IsBlank(_userDomain)
+        Size: =21
+
+    RectCalendarEventsHeader1 As rectangle:
+        X: =LblCalendarEventsHeader1.X
+        Y: =LblCalendarEventsHeader1.Y
+        Width: =LblCalendarEventsHeader1.Width
+        Height: =LblCalendarEventsHeader1.Height
+        ZIndex: =11
+        Visible: =_calendarVisible
+
+    LblCalendarEventsHeader1 As label:
+        Text: =Text(_dateSelected, DateTimeFormat.LongDate)
+        Y: =MonthDayGallery1.Y + MonthDayGallery1.Height + If(DateAdd(_firstDayInView, 35, Days) > _lastDayOfMonth, -65, 0)
+        Width: =Parent.Width
+        Height: =60
+        ZIndex: =12
+        Wrap: =false
+        Visible: =_calendarVisible
+        PaddingLeft: =30
+        Size: =21
+
+    CalendarEventsGallery1 As gallery.CalendarEventsGallery:
+        Items: |-
+            =/*Shows events only on selected date*/
+            SortByColumns(Filter(MyCalendarEvents, Text(Start, DateTimeFormat.ShortDate) = Text(_dateSelected, DateTimeFormat.ShortDate)), "Start")
+        AccessibleLabel: ="Calendar events for selected day"
+        TemplateSize: =105
+        TemplatePadding: =0
+        Layout: =Layout.Vertical
+        ShowScrollbar: =false
+        Y: =LblCalendarEventsHeader1.Y + LblCalendarEventsHeader1.Height
+        Width: =Parent.Width
+        Height: =Parent.Height - Self.Y
+        ZIndex: =13
+        Visible: =_calendarVisible
+
+        Rectangle1 As rectangle:
+            Fill: =RGBA(0,0,0,0)
+            HoverFill: =RGBA(0,0,0,0)
+            Width: =Parent.TemplateWidth
+            Height: =Parent.TemplateHeight
+            ZIndex: =1
+            BorderThickness: =If(ThisItem.Id = _selectedCalendarEvent.Id, 2, 0)
+            TabIndex: =0
+            OnSelect: =Select(Title4)
+
+        Body1 As label:
+            Text: =Text(ThisItem.Start, DateTimeFormat.ShortTime)
+            VerticalAlign: =Middle
+            X: =32
+            Y: =Title4.Y
+            Width: =110
+            Height: =Title4.Height
+            ZIndex: =5
+            Wrap: =false
+            Size: =17 * CalendarEventsGallery1.TemplateHeight / 105
+            FocusedBorderThickness: =2
+            OnSelect: =Select(Title4)
+
+        Title4 As label:
+            Text: =ThisItem.Subject
+            Tooltip: =ThisItem.Subject
+            BorderColor: =Self.Color
+            FontWeight: =FontWeight.Semibold
+            VerticalAlign: =Middle
+            X: =Body1.X + Body1.Width + 10
+            Y: =CalendarEventsGallery1.TemplateHeight / 4 - Self.Height / 2 + 5
+            Width: =CalendarEventsGallery1.TemplateWidth - Self.X - 10
+            Height: =Self.Size * 1.8
+            ZIndex: =3
+            Wrap: =false
+            Size: =19 * CalendarEventsGallery1.TemplateHeight / 105
+            TabIndex: =0
+            FocusedBorderThickness: =2
+            OnSelect: =Set(_selectedCalendarEvent, ThisItem)
+
+        Description1 As label:
+            Text: =DateDiff(ThisItem.Start, ThisItem.End, Minutes) & Lower(Left("Minute", 1))
+            VerticalAlign: =Middle
+            X: =32
+            Y: =Subtitle2.Y
+            Width: =100
+            Height: =Subtitle2.Height
+            ZIndex: =6
+            Wrap: =false
+            Size: =17 * CalendarEventsGallery1.TemplateHeight / 105
+            FocusedBorderThickness: =2
+            OnSelect: =Select(Title4)
+
+        iconLocation1 As icon.Waypoint:
+            Icon: =Icon.Waypoint
+            X: =Title4.X
+            Y: =Subtitle2.Y
+            Width: =28
+            Height: =Subtitle2.Height
+            ZIndex: =2
+            TabIndex: =0
+            OnSelect: =Select(Title4)
+
+        Subtitle2 As label:
+            Text: =ThisItem.Location
+            Tooltip: =ThisItem.Location
+            FontWeight: =FontWeight.Lighter
+            VerticalAlign: =Middle
+            X: =iconLocation1.X + iconLocation1.Width + 10
+            Y: =3 / 4 * CalendarEventsGallery1.TemplateHeight - Self.Height / 2 - 5
+            Width: =CalendarEventsGallery1.TemplateWidth - Self.X - 10
+            Height: =Self.Size * 2
+            ZIndex: =4
+            Wrap: =false
+            Size: =18 * CalendarEventsGallery1.TemplateHeight / 105
+            FocusedBorderThickness: =2
+            PaddingBottom: =0
+            OnSelect: =Select(Title4)
+
+        Separator2 As rectangle:
+            Y: =Parent.TemplateHeight - 1
+            Width: =Parent.TemplateWidth
+            Height: =1
+            ZIndex: =7
+            OnSelect: =Select(Parent)
+
+    LblNoEvents1 As label:
+        Text: =If(_showLoading, "Loading events...", "No events scheduled")
+        Align: =Align.Center
+        X: =CalendarEventsGallery1.X
+        Y: =CalendarEventsGallery1.Y + CalendarEventsGallery1.Height/2 - Self.Height/2
+        Width: =CalendarEventsGallery1.Width
+        Height: =64
+        DisplayMode: =DisplayMode.View
+        ZIndex: =16
+        Wrap: =false
+        Visible: =Or(_showLoading, CountRows(CalendarEventsGallery1.AllItems) = 0 && _calendarVisible)
+        Size: =21
+

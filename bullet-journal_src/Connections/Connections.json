@@ -1,0 +1,36 @@
+{
+  "45cb61d4-b333-4c57-87b1-3bada05c5952": {
+    "connectionInstanceId": "/providers/microsoft.powerapps/apis/shared_office365/connections/e51f2126a970442fb4329e9e9f6bb4b0",
+    "connectionRef": {
+      "apiTier": "Standard",
+      "displayName": "Office 365 Outlook",
+      "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1431/1.0.1431.2301/office365/icon.png",
+      "id": "/providers/microsoft.powerapps/apis/shared_office365",
+      "parameterHints": {}
+    },
+    "datasets": {},
+    "dataSources": [
+      "Office365Outlook"
+    ],
+    "dependencies": {},
+    "dependents": [],
+    "id": "45cb61d4-b333-4c57-87b1-3bada05c5952"
+  },
+  "9d067400-78e5-42d0-81ff-87d0cc304a17": {
+    "connectionInstanceId": "/providers/microsoft.powerapps/apis/shared_todo/connections/1dfa68b7603d44478c937bd695dcf8b3",
+    "connectionRef": {
+      "apiTier": "Standard",
+      "displayName": "Microsoft To-Do (Business)",
+      "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1420/1.0.1420.2245/todo/icon.png",
+      "id": "/providers/microsoft.powerapps/apis/shared_todo",
+      "parameterHints": {}
+    },
+    "datasets": {},
+    "dataSources": [
+      "MicrosoftTo-Do(Business)"
+    ],
+    "dependencies": {},
+    "dependents": [],
+    "id": "9d067400-78e5-42d0-81ff-87d0cc304a17"
+  }
+}

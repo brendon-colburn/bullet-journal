@@ -1,0 +1,292 @@
+"MonthlyScreen As screen.'phoneLayout_FluidGridWithHeaderPageLayout_ver3.0'":
+    OnVisible: |
+        =Set(
+            varStart,
+            Date(
+                Year(Now()),
+                Month(Now()),
+                1
+            )
+        );
+        Set(
+            varEnd,
+            Date(
+                Year(Now()),
+                Month(Now()) + 1,
+                0
+            )
+        );
+        Set(
+            varNoOfDays,
+            DateDiff(
+                varStart,
+                varEnd
+            ) + 1
+        );
+        ClearCollect(
+            NextDates,
+            AddColumns(
+                FirstN(
+                    LoopMaster,
+                    varNoOfDays
+                ),
+                "Date",
+                DateAdd(
+                    varStart,
+                    Index,
+                    Days
+                ),
+                "DayOfWeek",
+                Weekday(
+                    DateAdd(
+                        varStart,
+                        Index,
+                        Days
+                    )
+                ),
+                "Task1", "",
+                "Task1BtnShow", true,
+                "Task1TextShow", false,
+                "Task2", "",
+                "Task2BtnShow", false,
+                "Task2TextShow", false,
+                "Task3", "",
+                "Task3BtnShow", false,
+                "Task3TextShow", false
+            )
+        );
+
+    Container5 As groupContainer.verticalAutoLayoutContainer:
+        BorderColor: =RGBA(0, 0, 0, 1)
+        BorderStyle: =BorderStyle.Solid
+        Fill: =RGBA(0, 0, 0, 0)
+        X: =0
+        Y: =0
+        Width: =Parent.Width
+        Height: =88
+        DisplayMode: =DisplayMode.Edit
+        LayoutMode: =LayoutMode.Auto
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutAlignItems: =LayoutAlignItems.Start
+        LayoutJustifyContent: =LayoutJustifyContent.Start
+        LayoutGap: =0
+        LayoutOverflowX: =LayoutOverflow.Hide
+        LayoutOverflowY: =LayoutOverflow.Hide
+        LayoutWrap: =false
+        ZIndex: =8
+
+        Label3 As label:
+            Text: ="Header"
+            Align: =Align.Center
+            Width: =Parent.Width
+            Height: =70
+            ZIndex: =1
+            Size: =21
+
+    Container7 As groupContainer.verticalAutoLayoutContainer:
+        BorderColor: =RGBA(0, 0, 0, 1)
+        BorderStyle: =BorderStyle.Solid
+        Fill: =RGBA(0, 0, 0, 0)
+        X: =0
+        Y: =88
+        Width: =Parent.Width
+        Height: =68
+        DisplayMode: =DisplayMode.Edit
+        LayoutMode: =LayoutMode.Auto
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutAlignItems: =LayoutAlignItems.Start
+        LayoutJustifyContent: =LayoutJustifyContent.Start
+        LayoutGap: =0
+        LayoutOverflowX: =LayoutOverflow.Hide
+        LayoutOverflowY: =LayoutOverflow.Hide
+        LayoutWrap: =false
+        ZIndex: =9
+
+        Label2 As label:
+            Text: ="Tabs"
+            Align: =Align.Center
+            Width: =560
+            Height: =70
+            ZIndex: =1
+            Size: =21
+
+    Container3 As groupContainer.verticalAutoLayoutContainer:
+        BorderColor: =RGBA(0, 0, 0, 1)
+        BorderStyle: =BorderStyle.Solid
+        Fill: =RGBA(0, 0, 0, 0)
+        X: =0
+        Y: =156
+        Width: =Parent.Width
+        Height: =882
+        DisplayMode: =DisplayMode.Edit
+        LayoutMode: =LayoutMode.Auto
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutAlignItems: =LayoutAlignItems.Start
+        LayoutJustifyContent: =LayoutJustifyContent.Start
+        LayoutGap: =0
+        LayoutOverflowX: =LayoutOverflow.Hide
+        LayoutOverflowY: =LayoutOverflow.Scroll
+        LayoutWrap: =false
+        ZIndex: =7
+
+        Gallery3 As gallery.galleryVertical:
+            Items: =NextDates
+            TemplateSize: =50
+            Layout: =Layout.Vertical
+            Y: =156
+            Width: =Parent.Width
+            Height: =Parent.Height
+            ZIndex: =2
+            ShowScrollbar: =false
+
+            Container10 As groupContainer.horizontalAutoLayoutContainer:
+                BorderColor: =RGBA(0, 0, 0, 1)
+                BorderStyle: =BorderStyle.Solid
+                Fill: =RGBA(0, 0, 0, 0)
+                X: =0
+                Y: =0
+                Width: =Parent.Width
+                Height: =50
+                DisplayMode: =DisplayMode.Edit
+                LayoutMode: =LayoutMode.Auto
+                LayoutDirection: =LayoutDirection.Horizontal
+                LayoutAlignItems: =LayoutAlignItems.Start
+                LayoutJustifyContent: =LayoutJustifyContent.Start
+                LayoutGap: =20
+                LayoutOverflowX: =LayoutOverflow.Hide
+                LayoutOverflowY: =LayoutOverflow.Hide
+                LayoutWrap: =false
+                ZIndex: =8
+
+                Icon2 As icon.Add:
+                    Icon: =Icon.Add
+                    X: =105
+                    Height: =50
+                    ZIndex: =2
+                    Visible: =ThisItem.Task1BtnShow
+                    OnSelect: |-
+                        =Patch(NextDates,LookUp(NextDates, Index = ThisItem.Index), {Task1BtnShow: false, Task1TextShow: true, Task2BtnShow:true})
+
+                TextInput4 As text:
+                    Default: =ThisItem.Task1
+                    Mode: =TextMode.MultiLine
+                    X: =105
+                    Width: =167.33333
+                    Height: =50
+                    ZIndex: =5
+                    Size: =14
+                    Visible: =ThisItem.Task1TextShow
+                    OnChange: |-
+                        =Patch(NextDates,LookUp(NextDates, Index = ThisItem.Index), {Task1: Self.Text})
+
+                Icon4 As icon.Add:
+                    Icon: =Icon.Add
+                    X: =283
+                    Height: =50
+                    ZIndex: =4
+                    Visible: =ThisItem.Task2BtnShow
+                    OnSelect: |-
+                        =Patch(NextDates,LookUp(NextDates, Index = ThisItem.Index), {Task2BtnShow: false, Task2TextShow: true, Task3BtnShow:true})
+
+                TextInput5 As text:
+                    Default: =ThisItem.Task2
+                    Mode: =TextMode.MultiLine
+                    X: =283
+                    Width: =167.33333
+                    Height: =50
+                    ZIndex: =6
+                    Size: =14
+                    Visible: =ThisItem.Task2TextShow
+                    OnChange: |-
+                        =Patch(NextDates,LookUp(NextDates, Index = ThisItem.Index), {Task2: Self.Text})
+
+                Icon3 As icon.Add:
+                    Icon: =Icon.Add
+                    X: =462
+                    Height: =50
+                    ZIndex: =3
+                    Visible: =ThisItem.Task3BtnShow
+                    OnSelect: |-
+                        =Patch(NextDates,LookUp(NextDates, Index = ThisItem.Index), {Task3BtnShow: false, Task3TextShow: true})
+
+                TextInput6 As text:
+                    Default: =ThisItem.Task3
+                    Mode: =TextMode.MultiLine
+                    X: =462
+                    Width: =167.33333
+                    Height: =50
+                    ZIndex: =7
+                    Size: =14
+                    Visible: =ThisItem.Task3TextShow
+                    OnChange: |-
+                        =Patch(NextDates,LookUp(NextDates, Index = ThisItem.Index), {Task3: Self.Text})
+
+                Label5 As label:
+                    Text: =ThisItem.Index+1 & " " & Last(FirstN(Calendar.WeekdaysShort(), ThisItem.DayOfWeek)).Value
+                    Font: =Font.'Segoe UI'
+                    FontWeight: =FontWeight.Semibold
+                    Y: =3
+                    Width: =128
+                    Height: =47
+                    ZIndex: =1
+                    Size: =21
+
+    Container8 As groupContainer.verticalAutoLayoutContainer:
+        BorderColor: =RGBA(0, 0, 0, 1)
+        BorderStyle: =BorderStyle.Solid
+        Fill: =RGBA(0, 0, 0, 0)
+        X: =0
+        Y: =1066
+        Width: =Parent.Width
+        Height: =70
+        DisplayMode: =DisplayMode.Edit
+        LayoutMode: =LayoutMode.Auto
+        LayoutDirection: =LayoutDirection.Horizontal
+        LayoutAlignItems: =LayoutAlignItems.Center
+        LayoutJustifyContent: =LayoutJustifyContent.Center
+        LayoutGap: =25
+        LayoutOverflowX: =LayoutOverflow.Hide
+        LayoutOverflowY: =LayoutOverflow.Hide
+        LayoutWrap: =false
+        ZIndex: =10
+
+        Button1 As button:
+            Text: ="Home"
+            Font: =Font.'Segoe UI'
+            X: =16
+            Y: =1066
+            Width: =136
+            Height: =70
+            ZIndex: =1
+            Size: =20
+
+        Button1_1 As button:
+            Text: ="Monthly"
+            Font: =Font.'Segoe UI'
+            X: =160
+            Y: =1066
+            Width: =136
+            Height: =70
+            ZIndex: =2
+            Size: =20
+
+        Button1_2 As button:
+            Text: ="Weekly"
+            Font: =Font.'Segoe UI'
+            X: =315
+            Y: =1066
+            Width: =136
+            Height: =70
+            ZIndex: =3
+            Size: =20
+
+        Button1_3 As button:
+            Text: ="Daily"
+            Font: =Font.'Segoe UI'
+            X: =470
+            Y: =1066
+            Width: =136
+            Height: =70
+            ZIndex: =4
+            Size: =20
+

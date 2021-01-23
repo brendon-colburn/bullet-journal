@@ -1,0 +1,9 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\brecol\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\GitHub\\PowerApps-Language-Tooling\\pkg",
+      "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+    ]
+  }
+}
